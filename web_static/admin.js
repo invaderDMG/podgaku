@@ -1,6 +1,7 @@
 /**
  * Podgaku - Panel de Administración Web Estático
  */
+
 class AdminViewer {
     constructor() {
         this.episodes = [];
@@ -78,7 +79,7 @@ class AdminViewer {
         try {
             const response = await fetch('rss.xml');
             if (!response.ok) {
-                throw new Error('Error al cargar el RSS');
+                throw new Error(`Error al cargar el RSS: ${response.status} ${response.statusText}`);
             }
             
             const xmlText = await response.text();
@@ -108,15 +109,37 @@ class AdminViewer {
                 const description = item.querySelector('description')?.textContent || '';
                 const audioUrl = item.querySelector('enclosure')?.getAttribute('url') || '';
                 const pubDate = item.querySelector('pubDate')?.textContent || '';
-                const duration = item.querySelector('itunes\\:duration, duration')?.textContent || '';
+                const durationRaw = item.querySelector('itunes\\:duration, duration')?.textContent || '';
+                const duration = this.formatDuration(durationRaw);
                 const episodeNumber = parseInt(item.querySelector('itunes\\:episode, episode')?.textContent) || null;
                 const season = parseInt(item.querySelector('itunes\\:season, season')?.textContent) || null;
                 
                 // Extraer tracklist
                 let tracklist = [];
-                const contentEncoded = item.querySelector('content\\:encoded');
+                
+                // Probar diferentes selectores para content:encoded
+                let contentEncoded = item.querySelector('content\\:encoded');
+                if (!contentEncoded) {
+                    contentEncoded = item.getElementsByTagName('content:encoded')[0];
+                }
+                if (!contentEncoded) {
+                    contentEncoded = item.querySelector('[*|encoded]');
+                }
+                if (!contentEncoded) {
+                    // Buscar por nombre de tag directamente
+                    const allElements = item.getElementsByTagName('*');
+                    for (let el of allElements) {
+                        if (el.tagName === 'content:encoded' || el.localName === 'encoded') {
+                            contentEncoded = el;
+                            break;
+                        }
+                    }
+                }
+                
                 if (contentEncoded) {
-                    const content = contentEncoded.textContent;
+                    let content = contentEncoded.textContent;
+                    // Decodificar entidades HTML
+                    content = content.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
                     const ulMatch = content.match(/<ul>(.*?)<\/ul>/s);
                     if (ulMatch) {
                         const liMatches = ulMatch[1].match(/<li>(.*?)<\/li>/g);
@@ -125,6 +148,7 @@ class AdminViewer {
                         }
                     }
                 }
+                
                 
                 this.episodes.push({
                     title,
@@ -196,8 +220,8 @@ class AdminViewer {
         const totalEpisodes = this.episodes.length;
         const totalDuration = this.calculateTotalDuration();
         const averageDuration = this.calculateAverageDuration();
-        const episodesWithTracklist = this.episodes.filter(ep => ep.tracklist && ep.tracklist.length > 0).length;
         const totalTracks = this.episodes.reduce((total, ep) => total + (ep.tracklist ? ep.tracklist.length : 0), 0);
+        const totalSeasons = [...new Set(this.episodes.map(ep => ep.season).filter(s => s))].length;
         
         // Episodio más reciente
         const latestEpisode = this.episodes.length > 0 ? this.episodes[0] : null;
@@ -225,8 +249,8 @@ class AdminViewer {
                 </div>
                 
                 <div class="stat-card">
-                    <div class="stat-number">${episodesWithTracklist}</div>
-                    <div class="stat-label"><i class="fas fa-list-music"></i> Con Tracklist</div>
+                    <div class="stat-number">${totalSeasons}</div>
+                    <div class="stat-label"><i class="fas fa-tv"></i> Temporadas</div>
                 </div>
                 
                 ${latestEpisode ? `
@@ -282,21 +306,27 @@ class AdminViewer {
     }
 
     calculateTotalDuration() {
-        let totalMinutes = 0;
+        let totalSeconds = 0;
         
         this.episodes.forEach(episode => {
             if (episode.duration) {
-                const parts = episode.duration.split(':');
-                if (parts.length === 2) {
-                    totalMinutes += parseInt(parts[0]) + (parseInt(parts[1]) / 60);
-                } else if (parts.length === 3) {
-                    totalMinutes += parseInt(parts[0]) * 60 + parseInt(parts[1]) + (parseInt(parts[2]) / 60);
+                // Si la duración está en segundos (número)
+                if (!isNaN(episode.duration)) {
+                    totalSeconds += parseInt(episode.duration);
+                } else {
+                    // Si está en formato mm:ss o hh:mm:ss
+                    const parts = episode.duration.split(':');
+                    if (parts.length === 2) {
+                        totalSeconds += parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                    } else if (parts.length === 3) {
+                        totalSeconds += parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+                    }
                 }
             }
         });
         
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = Math.floor(totalMinutes % 60);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
         
         return `${hours}h ${minutes}m`;
     }
@@ -304,26 +334,52 @@ class AdminViewer {
     calculateAverageDuration() {
         if (this.episodes.length === 0) return '0m';
         
-        let totalMinutes = 0;
+        let totalSeconds = 0;
         let validEpisodes = 0;
         
         this.episodes.forEach(episode => {
             if (episode.duration) {
-                const parts = episode.duration.split(':');
-                if (parts.length === 2) {
-                    totalMinutes += parseInt(parts[0]) + (parseInt(parts[1]) / 60);
+                // Si la duración está en segundos (número)
+                if (!isNaN(episode.duration)) {
+                    totalSeconds += parseInt(episode.duration);
                     validEpisodes++;
-                } else if (parts.length === 3) {
-                    totalMinutes += parseInt(parts[0]) * 60 + parseInt(parts[1]) + (parseInt(parts[2]) / 60);
-                    validEpisodes++;
+                } else {
+                    // Si está en formato mm:ss o hh:mm:ss
+                    const parts = episode.duration.split(':');
+                    if (parts.length === 2) {
+                        totalSeconds += parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                        validEpisodes++;
+                    } else if (parts.length === 3) {
+                        totalSeconds += parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+                        validEpisodes++;
+                    }
                 }
             }
         });
         
         if (validEpisodes === 0) return '0m';
         
-        const avgMinutes = Math.floor(totalMinutes / validEpisodes);
-        return `${avgMinutes}m`;
+        const averageSeconds = Math.floor(totalSeconds / validEpisodes);
+        const minutes = Math.floor(averageSeconds / 60);
+        return `${minutes}m`;
+    }
+
+    formatDuration(duration) {
+        if (!duration) return '';
+        
+        // Si ya está en formato mm:ss o hh:mm:ss, devolverlo tal como está
+        if (duration.includes(':')) {
+            return duration;
+        }
+        
+        // Si está en segundos, convertir a mm:ss
+        const totalSeconds = parseInt(duration);
+        if (isNaN(totalSeconds)) return duration;
+        
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
 }
 
@@ -331,3 +387,8 @@ class AdminViewer {
 document.addEventListener('DOMContentLoaded', () => {
     window.adminViewer = new AdminViewer();
 });
+
+// Backup: inicializar inmediatamente si el DOM ya está listo
+if (document.readyState !== 'loading') {
+    window.adminViewer = new AdminViewer();
+}

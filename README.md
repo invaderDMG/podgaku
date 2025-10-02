@@ -144,7 +144,16 @@ python main.py migrate
 
 Una vez que tengas episodios listos:
 
-**🧠 Actualización inteligente** (recomendado):
+**🚀 Despliegue completo** (recomendado):
+```bash
+# Subir TODO: RSS + episodios + frontend web
+python deploy_all.py --auto
+
+# Modo interactivo (pide confirmación)
+python deploy_all.py
+```
+
+**🧠 Actualización inteligente** (solo episodios):
 ```bash
 # Subir solo episodios nuevos/modificados + RSS
 python update_podcast.py

@@ -77,7 +77,7 @@ class PodcastViewer {
             // Cargar el RSS XML
             const response = await fetch('rss.xml');
             if (!response.ok) {
-                throw new Error('Error al cargar el RSS');
+                throw new Error(`Error al cargar el RSS: ${response.status} ${response.statusText}`);
             }
             
             const xmlText = await response.text();
@@ -93,20 +93,38 @@ class PodcastViewer {
                 const description = item.querySelector('description')?.textContent || '';
                 const audioUrl = item.querySelector('enclosure')?.getAttribute('url') || '';
                 const pubDate = item.querySelector('pubDate')?.textContent || '';
-                const duration = item.querySelector('itunes\\:duration, duration')?.textContent || '';
+                const durationRaw = item.querySelector('itunes\\:duration, duration')?.textContent || '';
+                const duration = this.formatDuration(durationRaw);
                 const episodeNumber = parseInt(item.querySelector('itunes\\:episode, episode')?.textContent) || null;
                 const season = parseInt(item.querySelector('itunes\\:season, season')?.textContent) || null;
                 
-                // Debug: verificar que se están extrayendo las temporadas correctamente
-                if (index < 3) {
-                    console.log(`Episodio ${episodeNumber}: Temporada ${season}, Título: ${title}`);
-                }
                 
                 // Extraer tracklist del contenido CDATA
                 let tracklist = [];
-                const contentEncoded = item.querySelector('content\\:encoded');
+                
+                // Probar diferentes selectores para content:encoded
+                let contentEncoded = item.querySelector('content\\:encoded');
+                if (!contentEncoded) {
+                    contentEncoded = item.getElementsByTagName('content:encoded')[0];
+                }
+                if (!contentEncoded) {
+                    contentEncoded = item.querySelector('[*|encoded]');
+                }
+                if (!contentEncoded) {
+                    // Buscar por nombre de tag directamente
+                    const allElements = item.getElementsByTagName('*');
+                    for (let el of allElements) {
+                        if (el.tagName === 'content:encoded' || el.localName === 'encoded') {
+                            contentEncoded = el;
+                            break;
+                        }
+                    }
+                }
+                
                 if (contentEncoded) {
-                    const content = contentEncoded.textContent;
+                    let content = contentEncoded.textContent;
+                    // Decodificar entidades HTML
+                    content = content.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
                     // Buscar listas <ul><li>
                     const ulMatch = content.match(/<ul>(.*?)<\/ul>/s);
                     if (ulMatch) {
@@ -140,7 +158,6 @@ class PodcastViewer {
                 });
             });
             
-            console.log(`✅ Cargados ${this.episodes.length} episodios del RSS`);
             
         } catch (error) {
             console.error('Error cargando RSS:', error);
@@ -227,9 +244,32 @@ class PodcastViewer {
             }
         }, 3000);
     }
+
+    formatDuration(duration) {
+        if (!duration) return '';
+        
+        // Si ya está en formato mm:ss o hh:mm:ss, devolverlo tal como está
+        if (duration.includes(':')) {
+            return duration;
+        }
+        
+        // Si está en segundos, convertir a mm:ss
+        const totalSeconds = parseInt(duration);
+        if (isNaN(totalSeconds)) return duration;
+        
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
 }
 
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     window.podcastViewer = new PodcastViewer();
 });
+
+// Backup: inicializar inmediatamente si el DOM ya está listo
+if (document.readyState !== 'loading') {
+    window.podcastViewer = new PodcastViewer();
+}

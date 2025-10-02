@@ -100,7 +100,7 @@ class PodcastViewer {
                         <div class="episode-title">${episode.title}</div>
                         <div class="episode-meta">
                             <span><i class="fas fa-calendar"></i> ${new Date(episode.pub_date).toLocaleDateString()}</span>
-                            <span><i class="fas fa-clock"></i> ${episode.duration}</span>
+                            <span><i class="fas fa-clock"></i> ${this.formatDuration(episode.duration)}</span>
                             ${episode.episode_number ? `<span><i class="fas fa-hashtag"></i> Episodio ${episode.episode_number}</span>` : ''}
                             ${episode.season ? `<span><i class="fas fa-tv"></i> Temporada ${episode.season}</span>` : ''}
                         </div>
@@ -152,6 +152,24 @@ class PodcastViewer {
                 notification.parentNode.removeChild(notification);
             }
         }, 3000);
+    }
+
+    formatDuration(duration) {
+        if (!duration) return '';
+        
+        // Si ya está en formato mm:ss o hh:mm:ss, devolverlo tal como está
+        if (duration.toString().includes(':')) {
+            return duration;
+        }
+        
+        // Si está en segundos, convertir a mm:ss
+        const totalSeconds = parseInt(duration);
+        if (isNaN(totalSeconds)) return duration;
+        
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
 }
 

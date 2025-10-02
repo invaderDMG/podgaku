@@ -8,7 +8,6 @@ class AdminManager {
         this.filteredEpisodes = [];
         this.currentFilter = 'all';
         this.currentFile = null;
-        this.currentEpisodeIndex = null;
         this.init();
     }
 
@@ -261,7 +260,7 @@ class AdminManager {
                         <div class="episode-title">${episode.title}</div>
                         <div class="episode-meta">
                             <span><i class="fas fa-calendar"></i> ${new Date(episode.pub_date).toLocaleDateString()}</span>
-                            <span><i class="fas fa-clock"></i> ${episode.duration}</span>
+                            <span><i class="fas fa-clock"></i> ${this.formatDuration(episode.duration)}</span>
                             ${episode.episode_number ? `<span><i class="fas fa-hashtag"></i> Episodio ${episode.episode_number}</span>` : ''}
                             ${episode.season ? `<span><i class="fas fa-tv"></i> Temporada ${episode.season}</span>` : ''}
                         </div>
@@ -269,9 +268,6 @@ class AdminManager {
                     <div class="episode-actions">
                         <button class="btn btn-small btn-outline" onclick="adminManager.playEpisode('${episode.audio_url}')">
                             <i class="fas fa-play"></i> Reproducir
-                        </button>
-                        <button class="btn btn-small btn-danger" onclick="adminManager.confirmDelete(${index})">
-                            <i class="fas fa-trash"></i> Eliminar
                         </button>
                     </div>
                 </div>
@@ -298,40 +294,7 @@ class AdminManager {
         });
     }
 
-    confirmDelete(index) {
-        this.currentEpisodeIndex = index;
-        document.getElementById('confirmModal').style.display = 'block';
-    }
 
-    async deleteEpisode() {
-        if (this.currentEpisodeIndex === null) return;
-
-        try {
-            const episode = this.episodes[this.currentEpisodeIndex];
-            const response = await fetch(`/api/episodes/${episode.id}`, {
-                method: 'DELETE'
-            });
-
-            if (!response.ok) {
-                throw new Error('Error al eliminar el episodio');
-            }
-
-            this.showNotification('Episodio eliminado correctamente', 'success');
-            this.closeModal();
-            await this.loadEpisodes();
-            this.filteredEpisodes = [...this.episodes];
-            this.renderEpisodes();
-            this.updateEpisodeCount();
-        } catch (error) {
-            console.error('Error al eliminar episodio:', error);
-            this.showNotification('Error al eliminar el episodio', 'error');
-        }
-    }
-
-    closeModal() {
-        document.getElementById('confirmModal').style.display = 'none';
-        this.currentEpisodeIndex = null;
-    }
 
     showNotification(message, type = 'info') {
         const notifications = document.getElementById('notifications');
@@ -349,6 +312,24 @@ class AdminManager {
                 notification.parentNode.removeChild(notification);
             }
         }, 3000);
+    }
+
+    formatDuration(duration) {
+        if (!duration) return '';
+        
+        // Si ya está en formato mm:ss o hh:mm:ss, devolverlo tal como está
+        if (duration.toString().includes(':')) {
+            return duration;
+        }
+        
+        // Si está en segundos, convertir a mm:ss
+        const totalSeconds = parseInt(duration);
+        if (isNaN(totalSeconds)) return duration;
+        
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
 }
 
