@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podgaku - Podcast de Música Japonesa</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="banner-container">
+                <img src="{{ url_for('static', filename='img/banner.png') }}" alt="Podgaku Banner" class="banner">
+            </div>
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="Podgaku Logo" class="logo">
+                </div>
+                <div class="header-text">
+                    <h1>Podgaku</h1>
+                    <p>Explorando los sonidos de la música japonesa</p>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Sección de episodios -->
+            <section class="episodes-section">
+                <h3><i class="fas fa-headphones"></i> Episodios</h3>
+                <div id="episodesList" class="episodes-list">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Cargando episodios...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podgaku - Panel de Administración</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="banner-container">
+                <img src="{{ url_for('static', filename='img/banner.png') }}" alt="Podgaku Banner" class="banner">
+            </div>
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="Podgaku Logo" class="logo">
+                </div>
+                <div class="header-text">
+                    <h1>Podgaku - Panel de Administración</h1>
+                    <p>Gestiona tu podcast de música japonesa de forma fácil y visual</p>
+                    <div class="admin-nav">
+                        <a href="/" class="btn btn-outline">
+                            <i class="fas fa-list"></i> Ver Lista Pública
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Sección de subida de archivos -->
+            <section class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Arrastra tu archivo MP3 aquí</h3>
+                        <p>o haz clic para seleccionar</p>
+                        <input type="file" id="fileInput" accept=".mp3" style="display: none;">
+                    </div>
+                </div>
+                
+                <div class="upload-progress" id="uploadProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p id="progressText">Subiendo archivo...</p>
+                </div>
+            </section>
+
+            <!-- Sección de metadatos -->
+            <section class="metadata-section" id="metadataSection" style="display: none;">
+                <h3><i class="fas fa-edit"></i> Información del Episodio</h3>
+                <form id="episodeForm">
+                    <div class="form-group">
+                        <label for="title">Título del Episodio *</label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Descripción</label>
+                        <textarea id="description" name="description" rows="4" placeholder="Describe el episodio..."></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="duration">Duración (mm:ss)</label>
+                            <input type="text" id="duration" name="duration" placeholder="45:30">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="episodeNumber">Número de Episodio</label>
+                            <input type="number" id="episodeNumber" name="episodeNumber" min="1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="season">Temporada</label>
+                            <input type="number" id="season" name="season" min="1" value="1">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tracklist">Tracklist (una canción por línea)</label>
+                        <textarea id="tracklist" name="tracklist" rows="6" placeholder="Canción 1 - Artista&#10;Canción 2 - Artista&#10;..."></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar Episodio
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="adminManager.cancelUpload()">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Sección de episodios existentes -->
+            <section class="episodes-section">
+                <h3><i class="fas fa-list"></i> Episodios Existentes</h3>
+                <div id="episodesList" class="episodes-list">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Cargando episodios...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3>Confirmar Eliminación</h3>
+            <p>¿Estás seguro de que quieres eliminar este episodio?</p>
+            <div class="modal-actions">
+                <button class="btn btn-danger" onclick="adminManager.deleteEpisode()">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
+                <button class="btn btn-secondary" onclick="adminManager.closeModal()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificaciones -->
+    <div id="notifications" class="notifications"></div>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>
