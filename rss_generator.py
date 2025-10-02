@@ -64,6 +64,11 @@ class RSSGenerator:
         email = ET.SubElement(channel, "itunes:email")
         email.text = self.config["email"]
         
+        # Owner (iTunes - requerido por Anchor)
+        owner = ET.SubElement(channel, "itunes:owner")
+        owner_email = ET.SubElement(owner, "itunes:email")
+        owner_email.text = self.config["email"]
+        
         # Managing Editor (RSS estándar - requerido por muchas plataformas)
         managing_editor = ET.SubElement(channel, "managingEditor")
         managing_editor.text = f"{self.config['email']} ({self.config['author']})"
