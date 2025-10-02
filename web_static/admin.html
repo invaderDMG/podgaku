@@ -52,9 +52,35 @@
                 </div>
             </section>
 
+            <!-- Menú de navegación -->
+            <nav class="navigation-menu">
+                <div class="nav-container">
+                    <div class="nav-filters">
+                        <button class="nav-btn active" data-filter="all">
+                            <i class="fas fa-list"></i> Todos los episodios
+                        </button>
+                        <button class="nav-btn" data-filter="1">
+                            <i class="fas fa-play"></i> Temporada 1
+                        </button>
+                        <button class="nav-btn" data-filter="2">
+                            <i class="fas fa-play"></i> Temporada 2
+                        </button>
+                        <button class="nav-btn" data-filter="3">
+                            <i class="fas fa-play"></i> Temporada 3
+                        </button>
+                        <button class="nav-btn" data-filter="4">
+                            <i class="fas fa-play"></i> Temporada 4
+                        </button>
+                    </div>
+                    <div class="nav-stats">
+                        <span id="episodeCount" class="episode-count">0 episodios</span>
+                    </div>
+                </div>
+            </nav>
+
             <!-- Lista de episodios para administración -->
             <section class="episodes-section">
-                <h3><i class="fas fa-list"></i> Gestión de Episodios</h3>
+                <h3 id="sectionTitle"><i class="fas fa-list"></i> Todos los episodios</h3>
                 <div class="admin-notice">
                     <i class="fas fa-info-circle"></i>
                     <p><strong>Nota:</strong> Para añadir nuevos episodios, usa el sistema local:</p>

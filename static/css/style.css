@@ -291,6 +291,105 @@ body {
     box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
 }
 
+/* Menú de navegación */
+.navigation-menu {
+    background: linear-gradient(135deg, #f4f4f4, #e8e8e8);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.nav-filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.nav-btn {
+    background: linear-gradient(135deg, #fff, #f8f8f8);
+    border: 2px solid #ddd;
+    color: #666;
+    padding: 10px 16px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.nav-btn:hover {
+    background: linear-gradient(135deg, #f0f0f0, #e8e8e8);
+    border-color: #bbb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.nav-btn.active {
+    background: linear-gradient(135deg, #ff8c42, #ff7829);
+    color: white;
+    border-color: #ff6b1a;
+    box-shadow: 0 4px 15px rgba(255, 140, 66, 0.3);
+}
+
+.nav-btn.active:hover {
+    background: linear-gradient(135deg, #ff7829, #ff6b1a);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 140, 66, 0.4);
+}
+
+.nav-stats {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.episode-count {
+    background: linear-gradient(135deg, #333, #555);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive para el menú */
+@media (max-width: 768px) {
+    .nav-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .nav-filters {
+        justify-content: center;
+    }
+    
+    .nav-btn {
+        flex: 1;
+        min-width: 100px;
+    }
+    
+    .nav-stats {
+        justify-content: center;
+    }
+}
+
 /* Sección de episodios */
 .episodes-section {
     background: white;

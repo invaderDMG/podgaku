@@ -4,15 +4,74 @@
 class AdminViewer {
     constructor() {
         this.episodes = [];
+        this.filteredEpisodes = [];
+        this.currentFilter = 'all';
         this.podcastInfo = {};
+        this.initializeNavigation();
         this.init();
+    }
+
+    initializeNavigation() {
+        // Añadir event listeners a los botones de navegación
+        const navButtons = document.querySelectorAll('.nav-btn');
+        navButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const filter = e.currentTarget.dataset.filter;
+                this.filterEpisodes(filter);
+                this.updateActiveNavButton(e.currentTarget);
+            });
+        });
+    }
+
+    updateActiveNavButton(activeButton) {
+        // Remover clase active de todos los botones
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        // Añadir clase active al botón clickeado
+        activeButton.classList.add('active');
+    }
+
+    filterEpisodes(filter) {
+        this.currentFilter = filter;
+        
+        if (filter === 'all') {
+            this.filteredEpisodes = [...this.episodes];
+        } else {
+            const seasonNumber = parseInt(filter);
+            this.filteredEpisodes = this.episodes.filter(episode => 
+                episode.season === seasonNumber
+            );
+        }
+        
+        this.renderEpisodes();
+        this.updateSectionTitle(filter);
+        this.updateEpisodeCount();
+    }
+
+    updateSectionTitle(filter) {
+        const sectionTitle = document.getElementById('sectionTitle');
+        if (filter === 'all') {
+            sectionTitle.innerHTML = '<i class="fas fa-list"></i> Todos los episodios';
+        } else {
+            sectionTitle.innerHTML = `<i class="fas fa-play"></i> Temporada ${filter}`;
+        }
+    }
+
+    updateEpisodeCount() {
+        const countElement = document.getElementById('episodeCount');
+        const count = this.filteredEpisodes.length;
+        countElement.textContent = `${count} episodio${count !== 1 ? 's' : ''}`;
     }
 
     async init() {
         await this.loadPodcastData();
+        // Inicializar con todos los episodios
+        this.filteredEpisodes = [...this.episodes];
         this.renderPodcastInfo();
         this.renderStats();
         this.renderEpisodes();
+        this.updateEpisodeCount();
     }
 
     async loadPodcastData() {
@@ -50,8 +109,8 @@ class AdminViewer {
                 const audioUrl = item.querySelector('enclosure')?.getAttribute('url') || '';
                 const pubDate = item.querySelector('pubDate')?.textContent || '';
                 const duration = item.querySelector('itunes\\:duration, duration')?.textContent || '';
-                const episodeNumber = item.querySelector('itunes\\:episode, episode')?.textContent || '';
-                const season = item.querySelector('itunes\\:season, season')?.textContent || '';
+                const episodeNumber = parseInt(item.querySelector('itunes\\:episode, episode')?.textContent) || null;
+                const season = parseInt(item.querySelector('itunes\\:season, season')?.textContent) || null;
                 
                 // Extraer tracklist
                 let tracklist = [];
@@ -184,12 +243,12 @@ class AdminViewer {
     renderEpisodes() {
         const episodesList = document.getElementById('episodesList');
         
-        if (this.episodes.length === 0) {
+        if (this.filteredEpisodes.length === 0) {
             episodesList.innerHTML = '<div class="loading">No hay episodios disponibles</div>';
             return;
         }
 
-        episodesList.innerHTML = this.episodes.map((episode, index) => `
+        episodesList.innerHTML = this.filteredEpisodes.map((episode, index) => `
             <div class="episode-card admin-episode">
                 <div class="episode-header">
                     <div>

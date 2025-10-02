@@ -170,6 +170,9 @@ test_*.py
 explore_*.py
 check_*.py
 test_*.php
+
+# Registro de archivos subidos
+uploaded_episodes.json
 *.log
 
 # Archivos específicos del proyecto que no deben subirse

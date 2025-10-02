@@ -92,7 +92,7 @@ def main():
     if success:
         print("\n💡 Notas importantes:")
         print("• El frontend es completamente estático y lee directamente del RSS")
-        print("• Para añadir episodios, usa el sistema local y luego sube con sftp_uploader.py")
+        print("• Para añadir episodios, usa el sistema local y luego sube con update_podcast.py")
         print("• El panel de administración web es solo informativo")
     
     return 0 if success else 1

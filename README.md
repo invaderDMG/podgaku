@@ -28,9 +28,8 @@ podcastXMLgen/
 ├── rss_generator.py        # Generador de RSS XML
 ├── podcast_config.py       # Configuración del podcast
 ├── load_env.py             # Cargador de variables de entorno
-├── sftp_uploader.py        # Subida de archivos vía SFTP
+├── update_podcast.py       # Actualización inteligente vía SFTP
 ├── upload_web.py           # Despliegue del frontend web
-├── deploy_to_ftp.py        # Despliegue completo automatizado
 ├── fix_episode_mapping.py  # Corrección de mapeo de episodios
 ├── .env                    # Variables de entorno (crear desde .env.example)
 ├── env.example             # Ejemplo de variables de entorno
@@ -145,20 +144,26 @@ python main.py migrate
 
 Una vez que tengas episodios listos:
 
-1. **Despliegue completo** (recomendado para primera vez):
-   ```bash
-   python deploy_to_ftp.py
-   ```
-   Esto hace:
-   - Actualiza configuración para producción
-   - Regenera RSS con URLs correctas
-   - Sube todos los archivos de audio
-   - Sube el RSS actualizado
+**🧠 Actualización inteligente** (recomendado):
+```bash
+# Subir solo episodios nuevos/modificados + RSS
+python update_podcast.py
 
-2. **Solo subir archivos nuevos**:
-   ```bash
-   python sftp_uploader.py
-   ```
+# Ver estado de archivos antes de subir
+python update_podcast.py status
+
+# Forzar re-subida completa (primera vez o problemas)
+python update_podcast.py reset
+python update_podcast.py
+```
+
+**🎯 Características del actualizador:**
+- ✅ **Solo sube episodios nuevos** o modificados
+- ✅ **Siempre actualiza el RSS** (cambios de metadatos, etc.)
+- ✅ **Mantiene registro** de archivos subidos
+- ✅ **Detecta cambios** automáticamente
+- ✅ **Verifica existencia** en servidor
+- ✅ **Resumen detallado** de cada operación
 
 3. **Desplegar frontend web**:
    ```bash
@@ -221,7 +226,7 @@ Una vez desplegado, tendrás:
 6. **💾 Guardar**: El sistema actualiza automáticamente
 7. **🚀 Desplegar**:
    ```bash
-   python sftp_uploader.py
+   python update_podcast.py
    ```
 8. **✅ ¡Listo!**: Episodio disponible en tu web y RSS
 
@@ -353,7 +358,7 @@ python fix_tracklists.py
 - [ ] Subir via frontend local
 - [ ] Verificar metadatos y tracklist
 - [ ] Probar reproducción local
-- [ ] Desplegar con `sftp_uploader.py`
+- [ ] Desplegar con `update_podcast.py`
 - [ ] Verificar en web pública
 
 ## 🔒 Seguridad
